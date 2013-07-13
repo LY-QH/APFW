@@ -1,4 +1,0 @@
-apfw
-====
-
-A php framework
