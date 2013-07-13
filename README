@@ -1,0 +1,13 @@
+Generate project Usage:
+
+[The first way]
+1. Modify bin/genProject.sh change '#!/usr/bin/php' to your php program path
+2. execute `bin/genProject.sh PROJECT-PATH`, be sure the PROJECT-PATH is writable and bin/genProject.sh is executable first
+
+[The second way]
+1. Create PROJECT-PATH/index.php, and put the below script in it
+   <?php
+   define('SYS_ROOT', realpath('FRAMEWORK-PATH') . '/');
+   require SYS_ROOT . 'framework.php';
+   ?>
+2. Replace FRAMEWORK-PATH to this package path
