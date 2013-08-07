@@ -438,8 +438,8 @@ function curlPost($url, $contents = array(), $files = array(), $writeLog = FALSE
     }
     $rest->params = array_merge($contents, $rest->params);
     $rest->post();
-    if ($writeLog)
-      writeLog($rest->response);
+    if ($rest->httperror) writeLog($rest->httperror);
+    if ($writeLog) writeLog($rest->response);
     return $rest->response;
   }
   // form field separator
@@ -571,10 +571,15 @@ function redis() {
   if (is_a($redis, 'Redis')) {
     return $redis;
   }
+  if (empty($GLOBALS['config']) || empty($GLOBALS['config']['redis'])) {
+    return NULL;
+  }
   if (!class_exists('Redis')) {
     require SYS_ROOT . 'addons/redisent.class.php';
   }
   $redis = new Redis();
+  $redis->connect($GLOBALS['config']['redis']['host'], $GLOBALS['config']['redis']['port'],
+      $GLOBALS['config']['redis']['timeout']);
   return $redis;
 }
 
@@ -700,7 +705,6 @@ function sendmail($name, $address, $subject, $body) {
 /**
  * Show message and redirect
  *
- * @access private
  * @param string $msg
  * @param integer $time
  * @param string $url
@@ -709,5 +713,18 @@ function sendmail($name, $address, $subject, $body) {
  */
 function showMsg($msg, $time = 2, $url = 'javascript:history.back(-1)') {
   $url = htmlspecialchars($url);
-  die('<html><head><title>提示</title></head><body><div style="margin:150px auto 0 auto;text-align:center;padding:10px;border:1px solid #DDD;width:300px;background:#F7F7F7"><p>'.$msg.'</p><a style="font-size:12px;text-decoration:none" href="'.$url.'" title="立即跳转">页面将在'.$time.'秒后跳转</a></div><script>setTimeout(function(){location="'.$url.'"}, '.($time*1000).');</script></body></html>');
+  die('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>提示</title></head><body><div style="margin:150px auto 0 auto;text-align:center;padding:10px;border:1px solid #DDD;width:300px;background:#F7F7F7"><p>'.$msg.'</p>'.(is_numeric($time)&&$time>0?'<a style="font-size:12px;text-decoration:none" href="'.$url.'" title="立即跳转">页面将在'.$time.'秒后跳转</a></div><script>setTimeout(function(){location="'.$url.'"}, '.($time*1000).');</script>':'').'</body></html>');
 }
+
+/**
+ * Add "th, st, nd, rd, th" after a number
+ *
+ * @param $cnnl
+ * @return string
+ */
+function ordinal($cdnl){ 
+    $test_c = abs($cdnl) % 10; 
+    return $cdnl. ((abs($cdnl) %100 < 21 && abs($cdnl) %100 > 4) ? 'th' 
+            : (($test_c < 4) ? ($test_c < 3) ? ($test_c < 2) ? ($test_c < 1) 
+            ? 'th' : 'st' : 'nd' : 'rd' : 'th'));
+}  

@@ -23,7 +23,7 @@ class restclient {
 	public $dnsCache = TRUE;
 	public $dnsCacheTime = 120;
 	public $verifypeer = FALSE;
-	public $timeout = 2.5;
+	public $timeout = 30;
 	public $maxredirs = 10;
 	public $cookie = NULL;
 	public $cookieFile = NULL;
