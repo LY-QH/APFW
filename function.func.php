@@ -270,28 +270,43 @@ function randChars($length = 8, $type = 7) {
 function outputJSON($status, $msg = '', $data = array()) {
   header('Content-type:application/json; charset=utf-8');
   $output = json_encode(array('status' => $status, 'msg' => $msg, 'data' => $data));
-  if (preg_match('/\{%(\w+)%\}/is', $output)) {
-    $lang_type = !empty($_COOKIE['_l_']) && in_array($_COOKIE['_l_'], $GLOBALS['config']['languages'])? $_COOKIE['_l_']:$GLOBALS['config']['languages'][0];
-    $lang_path = 'lang/'.$lang_type. '/';
-    $lang = json_decode(file_get_contents($lang_path.'public.json'), TRUE);
-    $files = new DirectoryIterator($lang_path);
-    if (is_array($files)) {
-      foreach ($files as $file) {
-        if (!$file->isFile()) continue;
-        $filepath = $file->getPathName();
-        if (FALSE !== strpos($filepath, 'public.json')) continue;
-        $l = json_decode(file_get_contents($filepath), TRUE);
-        if (is_array($l))
-          $lang = array_merge($lang, $l);
+  $output = lang($output);
+  die($output);
+}
+
+/**
+ * Convert language
+ * format: {%expression%}
+ *
+ * @param string $str
+ * @return string
+ */
+function lang($str) {
+  static $lang = array();
+  if (preg_match('/\{%(\w+)%\}/is', $str)) {
+    if (!count($lang)) {
+      $lang_type = !empty($_COOKIE['_l_']) && in_array($_COOKIE['_l_'], $GLOBALS['config']['languages'])? $_COOKIE['_l_']:$GLOBALS['config']['languages'][0];
+      $lang_path = 'lang/'.$lang_type. '/';
+      $lang = json_decode(file_get_contents($lang_path.'public.json'), TRUE);
+      $files = new DirectoryIterator($lang_path);
+      if (is_array($files)) {
+        foreach ($files as $file) {
+          if (!$file->isFile()) continue;
+          $filepath = $file->getPathName();
+          if (FALSE !== strpos($filepath, 'public.json')) continue;
+          $l = json_decode(file_get_contents($filepath), TRUE);
+          if (is_array($l))
+            $lang = array_merge($lang, $l);
+        }
       }
     }
-    if (is_array($lang)) {
+    if (count($lang)) {
       foreach ($lang as $k => $l) {
-        $output = str_replace('{%'.$k.'%}', $l, $output);
+        $str = str_replace('{%'.$k.'%}', $l, $str);
       }
     }
   }
-  die($output);
+  return $str;
 }
 
 /**
@@ -404,6 +419,8 @@ function writeLog($output, $flush = FALSE) {
     file_put_contents('runtime/log.txt', $output);
   else
     file_put_contents('runtime/log.txt', $output, FILE_APPEND);
+
+  return TRUE;
 }
 
 /**
@@ -713,7 +730,24 @@ function sendmail($name, $address, $subject, $body) {
  */
 function showMsg($msg, $time = 2, $url = 'javascript:history.back(-1)') {
   $url = htmlspecialchars($url);
-  die('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>提示</title></head><body><div style="margin:150px auto 0 auto;text-align:center;padding:10px;border:1px solid #DDD;width:300px;background:#F7F7F7"><p>'.$msg.'</p>'.(is_numeric($time)&&$time>0?'<a style="font-size:12px;text-decoration:none" href="'.$url.'" title="立即跳转">页面将在'.$time.'秒后跳转</a></div><script>setTimeout(function(){location="'.$url.'"}, '.($time*1000).');</script>':'').'</body></html>');
+  die('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>提示</title></head><body style="margin: 0; padding:0;"><div style="margin:15% auto 0 auto;text-align:center;padding:10px;border:1px solid #DDD;width:300px;background:#F7F7F7"><p>'.$msg.'</p>'.(is_numeric($time)&&$time>0?'<a style="font-size:12px;text-decoration:none" href="'.$url.'" title="立即跳转">页面将在'.$time.'秒后跳转</a></div><script>setTimeout(function(){location="'.$url.'"}, '.($time*1000).');</script>':'').'</body></html>');
+}
+
+/**
+ * Format datetime
+ *
+ * @param int $time
+ * @return string
+ */
+function dateFormat($time) {
+  if (date('Y-m-d') == date('Y-m-d', $time)) { // same day
+    $time = date('H:i', $time);
+  } elseif (date('Y') == date('Y', $time)) { // same year
+    $time = date('m-d H:i', $time);
+  } else {
+    $time = date('Y-m-d H:i', $time);
+  }
+  return $time;
 }
 
 /**
