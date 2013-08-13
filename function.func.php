@@ -740,12 +740,12 @@ function showMsg($msg, $time = 2, $url = 'javascript:history.back(-1)') {
  * @return string
  */
 function dateFormat($time) {
-  if (date('Y-m-d') == date('Y-m-d', $time)) { // same day
-    $time = date('H:i', $time);
-  } elseif (date('Y') == date('Y', $time)) { // same year
-    $time = date('m-d H:i', $time);
+  if (date('y-n-j') == date('y-n-j', $time)) { // same day
+    $time = date('G:i', $time);
+  } elseif (date('y') == date('y', $time)) { // same year
+    $time = date('n-j G:i', $time);
   } else {
-    $time = date('Y-m-d H:i', $time);
+    $time = date('y-n-j G:i', $time);
   }
   return $time;
 }
