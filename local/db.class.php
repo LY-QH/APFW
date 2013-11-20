@@ -197,32 +197,34 @@ class db {
 		$query = trim($query);
 
 		if (empty($query)) {
-			$this->_log('Empty query');
+			$this->_log($this->result = '[E]Empty query');
 			return FALSE;
 		}
 
 		if ($this->separate)
 			switch ($this->_action = strtoupper(substr($query, 0, strpos($query, ' ')))) {
-				case 'INSERT':
-				case 'UPDATE':
-				case 'DELETE':
-				case 'TRUNCATE':
-				case 'DROP':
-				case 'ALTER':
-				case 'CREATE':
-				case 'RENAME':
-					$this->_currentConnect = 'master';
-					break;
-				default:
-					$this->_currentConnect = 'slave';
+			case 'INSERT':
+			case 'UPDATE':
+			case 'DELETE':
+			case 'TRUNCATE':
+			case 'DROP':
+			case 'ALTER':
+			case 'CREATE':
+			case 'RENAME':
+				$this->_currentConnect = 'master';
+				break;
+			default:
+				$this->_currentConnect = 'slave';
 			}
 
-		if (!$this->_connect())
+		if (!$this->_connect()) {
+			$this->result = '[E]Connect database server failed';
 			return FALSE;
+		}
 		$this->_executeResult = mysql_query($this->_parseQuery($query, $data), $this->_{$this->_currentConnect});
 		if (mysql_errno($this->_{$this->_currentConnect})) {
-			$this->_log(mysql_error($this->_{$this->_currentConnect}));
-      return FALSE;
+			$this->_log($this->result = '[E]'.mysql_error($this->_{$this->_currentConnect}));
+			return FALSE;
 		}
 		return mysql_affected_rows($this->_{$this->_currentConnect});
 	}
@@ -245,55 +247,55 @@ class db {
 	 */
 	private function _connect() {
 		switch ($this->_currentConnect) {
-			case 'master':
-				if (is_resource($this->_master))
-					return TRUE;
+		case 'master':
+			if (is_resource($this->_master))
+				return TRUE;
 
-				if (count($this->masters) < 1) {
-					$this->_log('No master configures');
-					return FALSE;
-				}
+			if (count($this->masters) < 1) {
+				$this->_log('No master configures');
+				return FALSE;
+			}
 
-				$config = $this->masters[array_rand($this->masters)];
+			$config = $this->masters[array_rand($this->masters)];
 
-				if (empty($config)) {
-					$this->_log('No configures');
-					return FALSE;
-				}
+			if (empty($config)) {
+				$this->_log('No configures');
+				return FALSE;
+			}
 
-				break;
-			case 'slave':
-				if (is_resource($this->_slave))
-					return TRUE;
+			break;
+		case 'slave':
+			if (is_resource($this->_slave))
+				return TRUE;
 
-				if (count($this->slaves) < 1) {
-					$this->_log('No slave configures');
-					return FALSE;
-				}
+			if (count($this->slaves) < 1) {
+				$this->_log('No slave configures');
+				return FALSE;
+			}
 
-				$config = $this->slaves[array_rand($this->slaves)];
+			$config = $this->slaves[array_rand($this->slaves)];
 
-				if (empty($config)) {
-					$this->_log('No configures');
-					return FALSE;
-				}
+			if (empty($config)) {
+				$this->_log('No configures');
+				return FALSE;
+			}
 
-				break;
-			default:
-				if (is_resource($this->_default))
-					return TRUE;
+			break;
+		default:
+			if (is_resource($this->_default))
+				return TRUE;
 
-				if (count($this->default) < 1) {
-					$this->_log('No default configures');
-					return FALSE;
-				}
+			if (count($this->default) < 1) {
+				$this->_log('No default configures');
+				return FALSE;
+			}
 
-				$config = $this->default[array_rand($this->default)];
+			$config = $this->default[array_rand($this->default)];
 
-				if (empty($config)) {
-					$this->_log('No configures');
-					return FALSE;
-				}
+			if (empty($config)) {
+				$this->_log('No configures');
+				return FALSE;
+			}
 		}
 		if (empty($config['host']) || empty($config['user']) || empty($config['pwd']) || empty($config['db'])) {
 			$this->_log('No configures');
