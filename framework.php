@@ -51,9 +51,9 @@ isset($config['modules']) && (in_array(MODULE, $config['modules']) ||
 // auth request
 (!empty($config['modules'][MODULE]['username']) &&
 	!empty($config['modules'][MODULE]['passwd']) && (
-	empty($_SERVER['PHP_AUTH_USER']) || empty($_SERVER['PHP_AUTH_PW']) ||
-	$config['modules'][MODULE]['username'] != $_SERVER['PHP_AUTH_USER'] ||
-	$config['modules'][MODULE]['passwd'] != $_SERVER['PHP_AUTH_PW']
+		empty($_SERVER['PHP_AUTH_USER']) || empty($_SERVER['PHP_AUTH_PW']) ||
+		$config['modules'][MODULE]['username'] != $_SERVER['PHP_AUTH_USER'] ||
+		$config['modules'][MODULE]['passwd'] != $_SERVER['PHP_AUTH_PW']
 	)
 ) && httpAuth();
 
